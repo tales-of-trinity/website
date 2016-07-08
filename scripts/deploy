@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+eval `ssh-agent -s`
+ssh-add id_rsa
+
+git clone git@github.com:tales-of-trinity/website.git _site
+cd _site
+git checkout gh-pages
+cd ..
+jekyll build
+cd _site
+changes=`git diff`
+if [ -z "$changes" ]; then
+    echo "No changes to the output on this push; exiting."
+    exit 0
+fi
+
+git config user.name "Travis CI"
+git config user.email "tales.of.trinity.lps@gmail.com"
+git add --all .
+git commit -m "Travis deployment to github pages"
+
+git push origin gh-pages
